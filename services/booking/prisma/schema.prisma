@@ -7,7 +7,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["booking"]
+  schemas  = ["svc_booking"]
 }
 
 model Booking {
@@ -20,5 +20,5 @@ model Booking {
   createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
   @@map("bookings")
-  @@schema("booking")
+  @@schema("svc_booking")
 }

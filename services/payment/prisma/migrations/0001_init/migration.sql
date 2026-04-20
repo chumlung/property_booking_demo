@@ -1,6 +1,6 @@
-CREATE SCHEMA IF NOT EXISTS payment;
+CREATE SCHEMA IF NOT EXISTS svc_payment;
 
-CREATE TABLE IF NOT EXISTS payment.payments (
+CREATE TABLE IF NOT EXISTS svc_payment.payments (
   id UUID PRIMARY KEY,
   booking_id UUID NOT NULL,
   amount DECIMAL(10,2) NOT NULL,

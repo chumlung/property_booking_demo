@@ -7,7 +7,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["auth"]
+  schemas  = ["svc_auth"]
 }
 
 model User {
@@ -17,5 +17,5 @@ model User {
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
   @@map("users")
-  @@schema("auth")
+  @@schema("svc_auth")
 }

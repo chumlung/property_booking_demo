@@ -1,6 +1,6 @@
-CREATE SCHEMA IF NOT EXISTS property;
+CREATE SCHEMA IF NOT EXISTS svc_property;
 
-CREATE TABLE IF NOT EXISTS property.properties (
+CREATE TABLE IF NOT EXISTS svc_property.properties (
   id UUID PRIMARY KEY,
   title TEXT NOT NULL,
   city TEXT NOT NULL,

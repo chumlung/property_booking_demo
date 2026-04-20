@@ -1,6 +1,6 @@
-CREATE SCHEMA IF NOT EXISTS booking;
+CREATE SCHEMA IF NOT EXISTS svc_booking;
 
-CREATE TABLE IF NOT EXISTS booking.bookings (
+CREATE TABLE IF NOT EXISTS svc_booking.bookings (
   id UUID PRIMARY KEY,
   property_id UUID NOT NULL,
   guest_email TEXT NOT NULL,
