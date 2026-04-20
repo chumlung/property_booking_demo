@@ -13,6 +13,7 @@ WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
 RUN addgroup -g 1001 -S app && adduser -S app -u 1001 -G app
 COPY --from=builder /app /app
+RUN chown -R app:app /app
 USER app
 WORKDIR /app/services/payment
 CMD ["sh", "-c", "pnpm db:migrate && pnpm db:seed && node dist/main.js"]
