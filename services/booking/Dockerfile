@@ -11,7 +11,7 @@ RUN pnpm prune --prod
 FROM node:20-bookworm-slim AS runner
 WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
-RUN addgroup -g 1001 -S app && adduser -S app -u 1001 -G app
+RUN groupadd -g 1001 app && useradd -m -u 1001 -g app app
 COPY --from=builder /app /app
 RUN chown -R app:app /app
 USER app
