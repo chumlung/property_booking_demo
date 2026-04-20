@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #0c0a09;
+  --foreground: #fafaf9;
+  --muted: #a8a29e;
+  --card: #1c1917;
+  --accent: #ea580c;
+}
+
+body {
+  color: var(--foreground);
+  background: radial-gradient(ellipse 120% 80% at 50% -20%, #292524 0%, var(--background) 55%);
+  min-height: 100vh;
+}

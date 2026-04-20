@@ -1,0 +1,101 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: property_booking
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d property_booking']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  pgbouncer:
+    image: edoburu/pgbouncer:1.23.1
+    environment:
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: property_booking
+      POOL_MODE: transaction
+      MAX_CLIENT_CONN: 200
+      DEFAULT_POOL_SIZE: 20
+      RESERVE_POOL_SIZE: 5
+      RESERVE_POOL_TIMEOUT: 3
+      SERVER_RESET_QUERY: DISCARD ALL
+      IGNORE_STARTUP_PARAMETERS: extra_float_digits
+    ports:
+      - '6432:5432'
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  auth:
+    build:
+      context: ../..
+      dockerfile: services/auth/Dockerfile
+    environment:
+      PORT: 4001
+      NODE_ENV: development
+      DATABASE_URL: postgresql://postgres:postgres@pgbouncer:5432/property_booking?pgbouncer=true&connection_limit=5&pool_timeout=20
+      CORS_ORIGIN: http://localhost:3000
+    ports:
+      - '4001:4001'
+    depends_on:
+      pgbouncer:
+        condition: service_started
+
+  property:
+    build:
+      context: ../..
+      dockerfile: services/property/Dockerfile
+    environment:
+      PORT: 4002
+      NODE_ENV: development
+      DATABASE_URL: postgresql://postgres:postgres@pgbouncer:5432/property_booking?pgbouncer=true&connection_limit=5&pool_timeout=20
+      CORS_ORIGIN: http://localhost:3000
+    ports:
+      - '4002:4002'
+    depends_on:
+      pgbouncer:
+        condition: service_started
+
+  booking:
+    build:
+      context: ../..
+      dockerfile: services/booking/Dockerfile
+    environment:
+      PORT: 4003
+      NODE_ENV: development
+      DATABASE_URL: postgresql://postgres:postgres@pgbouncer:5432/property_booking?pgbouncer=true&connection_limit=5&pool_timeout=20
+      CORS_ORIGIN: http://localhost:3000
+    ports:
+      - '4003:4003'
+    depends_on:
+      pgbouncer:
+        condition: service_started
+
+  payment:
+    build:
+      context: ../..
+      dockerfile: services/payment/Dockerfile
+    environment:
+      PORT: 4004
+      NODE_ENV: development
+      DATABASE_URL: postgresql://postgres:postgres@pgbouncer:5432/property_booking?pgbouncer=true&connection_limit=5&pool_timeout=20
+      CORS_ORIGIN: http://localhost:3000
+    ports:
+      - '4004:4004'
+    depends_on:
+      pgbouncer:
+        condition: service_started
+
+volumes:
+  pgdata:

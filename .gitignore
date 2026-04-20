@@ -1,0 +1,14 @@
+node_modules
+dist
+.next
+.turbo
+coverage
+*.log
+.env
+.env.local
+.env.*.local
+.DS_Store
+pnpm-debug.log
+deploy-out
+
+services/*/src/generated

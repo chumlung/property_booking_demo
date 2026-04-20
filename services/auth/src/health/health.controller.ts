@@ -1,0 +1,31 @@
+import { Controller, Get, ServiceUnavailableException } from '@nestjs/common';
+import { HealthService } from './health.service';
+
+@Controller('health')
+export class HealthController {
+  constructor(private readonly healthService: HealthService) {}
+
+  @Get()
+  live() {
+    return { status: 'ok', service: 'auth' };
+  }
+
+  @Get('live')
+  liveness() {
+    return { status: 'ok', service: 'auth' };
+  }
+
+  @Get('ready')
+  async readiness() {
+    const databaseReady = await this.healthService.isDatabaseReady();
+    if (!databaseReady) {
+      throw new ServiceUnavailableException({
+        status: 'down',
+        service: 'auth',
+        checks: { database: 'down' },
+      });
+    }
+
+    return { status: 'ok', service: 'auth', checks: { database: 'up' } };
+  }
+}

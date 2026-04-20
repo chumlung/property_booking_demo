@@ -1,0 +1,23 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
+  output          = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["payment"]
+}
+
+model Payment {
+  id        String   @id @db.Uuid
+  bookingId String   @map("booking_id") @db.Uuid
+  amount    Decimal  @db.Decimal(10, 2)
+  currency  String   @default("USD")
+  status    String   @default("succeeded")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@map("payments")
+  @@schema("payment")
+}

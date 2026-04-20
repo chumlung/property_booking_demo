@@ -1,0 +1,27 @@
+{
+  "name": "property-booking-demo",
+  "private": true,
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "dev": "turbo run dev --filter=@property-booking/web",
+    "dev:web": "turbo run dev --filter=@property-booking/web",
+    "dev:infra": "docker compose -f infra/docker/docker-compose.yml up --build",
+    "dev:services-local": "turbo run dev --filter='./services/*'",
+    "db:migrate": "pnpm --filter @property-booking/auth db:migrate && pnpm --filter @property-booking/property db:migrate && pnpm --filter @property-booking/booking db:migrate && pnpm --filter @property-booking/payment db:migrate",
+    "db:seed": "pnpm --filter @property-booking/auth db:seed && pnpm --filter @property-booking/property db:seed && pnpm --filter @property-booking/booking db:seed && pnpm --filter @property-booking/payment db:seed",
+    "db:setup": "pnpm db:migrate && pnpm db:seed",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "eslint": "^9.17.0",
+    "prettier": "^3.4.2",
+    "turbo": "^2.3.3",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.19.0"
+  }
+}
