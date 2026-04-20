@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 # From repo root: docker build -f services/auth/Dockerfile .
-FROM node:20-alpine AS builder
+FROM node:20-bookworm-slim AS builder
 WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
 COPY . .
@@ -9,7 +9,7 @@ RUN pnpm --filter @property-booking/auth build
 ENV NODE_ENV=production
 RUN pnpm prune --prod
 
-FROM node:20-alpine AS runner
+FROM node:20-bookworm-slim AS runner
 WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
 RUN addgroup -g 1001 -S app && adduser -S app -u 1001 -G app
