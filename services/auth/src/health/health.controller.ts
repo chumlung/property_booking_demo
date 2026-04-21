@@ -9,16 +9,11 @@ export class HealthController {
   live() {
     return { status: 'ok', service: 'auth' };
   }
-
-  @Get('live')
-  liveness() {
-    return { status: 'ok', service: 'auth' };
-  }
-
+  
   @Get('ready')
-  async readiness() {
-    const databaseReady = await this.healthService.isDatabaseReady();
-    if (!databaseReady) {
+  async checkDatabaseReadiness() {
+    const isDatabaseReady = await this.healthService.checkDatabaseReadiness();
+    if (!isDatabaseReady) {
       throw new ServiceUnavailableException({
         status: 'down',
         service: 'auth',

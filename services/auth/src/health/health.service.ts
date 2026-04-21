@@ -5,9 +5,14 @@ import { PrismaService } from '../prisma/prisma.service';
 export class HealthService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async isDatabaseReady(): Promise<boolean> {
+  async checkDatabaseReadiness(): Promise<boolean> {
     try {
-      await this.prisma.$queryRaw`SELECT 1`;
+      await this.prisma.user.findMany({
+        take: 1,
+        select: {
+          id: true,
+        },
+      });
       return true;
     } catch {
       return false;
