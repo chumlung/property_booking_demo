@@ -8,6 +8,11 @@ export class UsersService {
   findAll() {
     return this.prisma.user.findMany({
       orderBy: { createdAt: 'asc' },
+      select: {
+        id: true,
+      },
+      take: 1
+      ,
     });
   }
 }

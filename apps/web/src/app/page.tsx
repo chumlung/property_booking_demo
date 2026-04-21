@@ -2,20 +2,44 @@ import Image from 'next/image';
 import { apiUrls, fetchJson } from '@/lib/api';
 import type { Booking, Health, Payment, Property, User } from '@property-booking/shared';
 
+const SERVICE_STATUS: Health = { status: 'down', service: 'unknown' };
+
+async function safeFetch<T>(url: string): Promise<T | null> {
+  try {
+    return await fetchJson<T>(url);
+  } catch {
+    return null;
+  }
+}
+
 async function load() {
-  const [authHealth, propertyHealth, bookingHealth, paymentHealth] = await Promise.all([
-    fetchJson<Health>(`${apiUrls.auth}/health`),
-    fetchJson<Health>(`${apiUrls.property}/health`),
-    fetchJson<Health>(`${apiUrls.booking}/health`),
-    fetchJson<Health>(`${apiUrls.payment}/health`),
+  const [authHealthRaw, propertyHealthRaw, bookingHealthRaw, paymentHealthRaw] = await Promise.all([
+    safeFetch<Health>(`${apiUrls.auth}/health`),
+    safeFetch<Health>(`${apiUrls.property}/health`),
+    safeFetch<Health>(`${apiUrls.booking}/health`),
+    safeFetch<Health>(`${apiUrls.payment}/health`),
   ]);
 
-  const [users, properties, bookings, payments] = await Promise.all([
-    fetchJson<User[]>(`${apiUrls.auth}/users`),
-    fetchJson<Property[]>(`${apiUrls.property}/properties`),
-    fetchJson<Booking[]>(`${apiUrls.booking}/bookings`),
-    fetchJson<Payment[]>(`${apiUrls.payment}/payments`),
+  const [usersRaw, propertiesRaw, bookingsRaw, paymentsRaw] = await Promise.all([
+    safeFetch<User[]>(`${apiUrls.auth}/users`),
+    safeFetch<Property[]>(`${apiUrls.property}/properties`),
+    safeFetch<Booking[]>(`${apiUrls.booking}/bookings`),
+    safeFetch<Payment[]>(`${apiUrls.payment}/payments`),
   ]);
+
+  const authHealth = authHealthRaw ?? { ...SERVICE_STATUS, service: 'auth' };
+  const propertyHealth = propertyHealthRaw ?? { ...SERVICE_STATUS, service: 'property' };
+  const bookingHealth = bookingHealthRaw ?? { ...SERVICE_STATUS, service: 'booking' };
+  const paymentHealth = paymentHealthRaw ?? { ...SERVICE_STATUS, service: 'payment' };
+
+  const users = usersRaw ?? [];
+  const properties = propertiesRaw ?? [];
+  const bookings = bookingsRaw ?? [];
+  const payments = paymentsRaw ?? [];
+
+  const downServices = [authHealth, propertyHealth, bookingHealth, paymentHealth]
+    .filter((h) => h.status !== 'ok')
+    .map((h) => h.service);
 
   return {
     health: { authHealth, propertyHealth, bookingHealth, paymentHealth },
@@ -23,29 +47,13 @@ async function load() {
     properties,
     bookings,
     payments,
+    downServices,
   };
 }
 
 export default async function HomePage() {
-  let data: Awaited<ReturnType<typeof load>>;
-  let error: string | null = null;
-  try {
-    data = await load();
-  } catch (e) {
-    error = e instanceof Error ? e.message : 'Failed to load demo data';
-    data = {
-      health: {
-        authHealth: { status: 'down', service: 'auth' },
-        propertyHealth: { status: 'down', service: 'property' },
-        bookingHealth: { status: 'down', service: 'booking' },
-        paymentHealth: { status: 'down', service: 'payment' },
-      },
-      users: [],
-      properties: [],
-      bookings: [],
-      payments: [],
-    };
-  }
+  const data = await load();
+  const hasDownServices = data.downServices.length > 0;
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-14">
@@ -67,9 +75,9 @@ export default async function HomePage() {
             </ul>
           </ul>
         </p>
-        {error ? (
+        {hasDownServices ? (
           <p className="mt-6 rounded-lg border border-red-900/60 bg-red-950/40 px-4 py-3 text-sm text-red-200">
-            Could not reach all services: {error}
+            Waking up the services: {data.downServices.join(', ')}
           </p>
         ) : null}
       </header>
