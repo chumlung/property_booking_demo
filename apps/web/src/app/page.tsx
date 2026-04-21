@@ -1,5 +1,7 @@
 import Image from 'next/image';
 import { apiUrls, fetchJson } from '@/lib/api';
+import { pollServiceHealthIfStale } from '@/lib/service-status-poller';
+import { getServiceStatusSnapshot } from '@/lib/service-status-store';
 import type { Booking, Health, Payment, Property, User } from '@property-booking/shared';
 
 const SERVICE_STATUS: Health = { status: 'down', service: 'unknown' };
@@ -13,6 +15,9 @@ async function safeFetch<T>(url: string): Promise<T | null> {
 }
 
 async function load() {
+  await pollServiceHealthIfStale();
+  const webhookStatus = getServiceStatusSnapshot();
+
   const [authHealthRaw, propertyHealthRaw, bookingHealthRaw, paymentHealthRaw] = await Promise.all([
     safeFetch<Health>(`${apiUrls.auth}/health`),
     safeFetch<Health>(`${apiUrls.property}/health`),
@@ -27,10 +32,13 @@ async function load() {
     safeFetch<Payment[]>(`${apiUrls.payment}/payments`),
   ]);
 
-  const authHealth = authHealthRaw ?? { ...SERVICE_STATUS, service: 'auth' };
-  const propertyHealth = propertyHealthRaw ?? { ...SERVICE_STATUS, service: 'property' };
-  const bookingHealth = bookingHealthRaw ?? { ...SERVICE_STATUS, service: 'booking' };
-  const paymentHealth = paymentHealthRaw ?? { ...SERVICE_STATUS, service: 'payment' };
+  const authHealth = authHealthRaw ?? webhookStatus.auth ?? { ...SERVICE_STATUS, service: 'auth' };
+  const propertyHealth =
+    propertyHealthRaw ?? webhookStatus.property ?? { ...SERVICE_STATUS, service: 'property' };
+  const bookingHealth =
+    bookingHealthRaw ?? webhookStatus.booking ?? { ...SERVICE_STATUS, service: 'booking' };
+  const paymentHealth =
+    paymentHealthRaw ?? webhookStatus.payment ?? { ...SERVICE_STATUS, service: 'payment' };
 
   const users = usersRaw ?? [];
   const properties = propertiesRaw ?? [];
